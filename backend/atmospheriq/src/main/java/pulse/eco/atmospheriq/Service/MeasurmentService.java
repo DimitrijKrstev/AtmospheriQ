@@ -25,7 +25,7 @@ public class MeasurmentService {
     }
     public List<Measurement> findBySensor(String id){
         return measurmentRepo.findAll()
-                .stream().filter(x->x.getSensor().getSensorId().equals(id))
+                .stream().filter(x->x.getSensorId().equals(id))
                 .collect(Collectors.toList());
     }
     public List<Measurement> findAllbyType(List<Measurement>measurements,String type){

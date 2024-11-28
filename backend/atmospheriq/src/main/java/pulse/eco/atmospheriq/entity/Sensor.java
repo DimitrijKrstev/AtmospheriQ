@@ -10,12 +10,11 @@ import java.util.List;
 @Table(name = "sensor")
 public class Sensor {
     @Id
+    @Column(name = "sensor_id")  // Explicitly define the column name for the sensorId
     private String sensorId;
 
     @Column(nullable = false)
     private String position;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
-    private List<Measurement> measurements;
 
 }

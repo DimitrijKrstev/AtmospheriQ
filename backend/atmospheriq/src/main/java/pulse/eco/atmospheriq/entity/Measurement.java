@@ -5,15 +5,14 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "sensor")
+@Table(name = "measurement")
 public class Measurement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "sensor_id")
-    private Sensor sensor;
+    @Column
+    private String sensorId;
 
     @Column
     private int value;
