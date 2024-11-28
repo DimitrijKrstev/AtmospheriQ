@@ -20,4 +20,7 @@ public class Measurement {
 
     @Column(nullable = false)
     private String timestamp;
+
+    @Column
+    private String type;
 }
