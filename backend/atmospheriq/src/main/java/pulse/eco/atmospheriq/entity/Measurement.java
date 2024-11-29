@@ -1,25 +1,28 @@
 package pulse.eco.atmospheriq.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
-@Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Table(name = "measurement")
 public class Measurement {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
-    @Column
     private String sensorId;
 
-    @Column
-    private int value;
+    private String type;
 
     @Column(nullable = false)
-    private String timestamp;
+    private String stamp;
 
-    @Column
-    private String type;
+    private String position;
+
+    @Column(name = "measurement_value")
+    private int value;
 }

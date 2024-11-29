@@ -8,6 +8,7 @@ public class AtmospheriqApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AtmospheriqApplication.class, args);
+
     }
 
 }
