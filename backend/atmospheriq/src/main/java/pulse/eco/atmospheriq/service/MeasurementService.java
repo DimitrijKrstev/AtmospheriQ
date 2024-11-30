@@ -1,7 +1,11 @@
 package pulse.eco.atmospheriq.service;
 
+import lombok.AllArgsConstructor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import pulse.eco.atmospheriq.entity.Measurement;
+import pulse.eco.atmospheriq.kafka.KafkaProducerService;
 import pulse.eco.atmospheriq.repository.MeasurementRepo;
 import pulse.eco.atmospheriq.repository.SensorRepo;
 
@@ -13,12 +17,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class MeasurementService {
     private final MeasurementRepo measurementRepo;
-
-    public MeasurementService(MeasurementRepo measurementRepo, SensorRepo sensorRepo) {
-        this.measurementRepo = measurementRepo;
-    }
+    private final KafkaProducerService kafkaProducerService;
 
     public void saveMeasurements(List<Measurement> measurements) {
         List<Measurement> currentMeasurements = getAllMeasurements();
@@ -33,12 +35,14 @@ public class MeasurementService {
 
                 updated.setValue(measurement.getValue());
                 updated.setStamp(measurement.getStamp());
+                measurementRepo.save(updated);
             }
             else{
                 measurementRepo.save(measurement);
             }
+
+            kafkaProducerService.sendMeasurement(measurement);
         }
-        //TODO send to Kafka
     }
 
     public List<Measurement> getAllMeasurements(){
