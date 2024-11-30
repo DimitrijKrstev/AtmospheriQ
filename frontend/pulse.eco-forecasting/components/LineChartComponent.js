@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Button, Box, Typography } from "@mui/material";
+import MeasurementRepository from "../repository/pulse-repository.js";
 
 const opshtini = [
 	{ name: "Centar", sensorId: "0f10deea-03bc-4a47-ae87-85442140467c" },
@@ -13,14 +14,33 @@ const opshtini = [
 const types = ["pm10", "pm25", "humidity", "temperature"];
 
 const LineChartComponent = ({ sensorData }) => {
+	const measurementRepository = new MeasurementRepository()
+
 	const [selectedType, setSelectedType] = useState("pm10");
 	const [chartData, setChartData] = useState([]);
+	const [currentData, setCurrentData] = useState([]);
 	const [selectedOpshtina, setSelectedOpshtina] = useState(opshtini[0]);
 
 	const fullQuarterHourRange = Array.from({ length: 97 }, (_, i) => i / 4); // 96 quarter-hour points (0-23.75)
 
 	useEffect(() => {
 		if (sensorData && sensorData.length > 0) {
+
+			measurementRepository.get12hRawMeasurements(opshtini[0].sensorId, "pm10")
+				.then((hourdata) => {
+
+					setCurrentData(hourdata.map((data) => {
+						const date = new Date(data.stamp);
+						const hour = date.getHours();
+						const minutes = date.getMinutes();
+						const timePoint = hour + (Math.floor(minutes / 15) * 0.25); // 15-minute interval
+						return {
+							x: timePoint,
+							y: parseFloat(data.value),
+						};
+					}))
+				});
+
 			const filteredData = sensorData.filter(
 				(data) =>
 					data.type === selectedType &&
@@ -48,12 +68,18 @@ const LineChartComponent = ({ sensorData }) => {
 				return pointForTimePoint || { x: timePoint, y: null };
 			});
 
-			setChartData(completeChartData.slice(0, 49).map(
+			/*setChartData(completeChartData.slice(0, 49).map(
 				(point) => { return { x: point.x, y: point.y } })
 				.concat(completeChartData.slice(49).map(
 					(point) => { return { x: point.x, yprim: point.y } })));
+			*/
 
+
+			setChartData(currentData
+				.concat(completeChartData.slice(49).map(
+					(point) => { return { x: point.x, yprim: point.y } })));
 		}
+
 	}, [selectedType, selectedOpshtina, sensorData]);
 
 	const xAxisTickFormatter = (value) => {
@@ -119,7 +145,7 @@ const LineChartComponent = ({ sensorData }) => {
 									id: 'realValue',
 									dataKey: 'y',
 									connectNulls: true,
-									area: true,
+									area: false,
 									label: `pm10:`,
 								},
 								{
