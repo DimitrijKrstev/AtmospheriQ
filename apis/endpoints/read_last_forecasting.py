@@ -1,14 +1,14 @@
 import sqlite3
-from fastapi import FastAPI, HTTPException
+from fastapi import HTTPException, APIRouter
 from datetime import datetime
 
-app = FastAPI()
+router = APIRouter()
 
 # Database file
 DATABASE = "../db/forecasting.db"
 
 
-@app.get("/get_measurements/{sensor}")
+@router.get("/get_measurements/{sensor}")
 def get_measurements(sensor: str):
     try:
         with sqlite3.connect(DATABASE) as conn:
