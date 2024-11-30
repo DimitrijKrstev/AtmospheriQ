@@ -17,6 +17,8 @@ const LineChartComponent = ({ sensorData }) => {
 	const [chartData, setChartData] = useState([]);
 	const [selectedOpshtina, setSelectedOpshtina] = useState(opshtini[0]);
 
+	const fullQuarterHourRange = Array.from({ length: 97 }, (_, i) => i / 4); // 96 quarter-hour points (0-23.75)
+
 	useEffect(() => {
 		if (sensorData && sensorData.length > 0) {
 			const filteredData = sensorData.filter(
@@ -30,21 +32,36 @@ const LineChartComponent = ({ sensorData }) => {
 				return;
 			}
 
-			const chartPoints = filteredData.map((data) => ({
-				x: new Date(data.stamp).getHours(), // Extract hour from timestamp
-				y: parseFloat(data.value), // Parse value as a number
-			}));
-
-			const fullHourRange = Array.from({ length: 24 }, (_, i) => i);
-
-			const completeChartData = fullHourRange.map(hour => {
-				const pointForHour = chartPoints.find(point => point.x === hour);
-				return pointForHour || { x: hour, y: null };
+			const chartPoints = filteredData.map((data) => {
+				const date = new Date(data.stamp);
+				const hour = date.getHours();
+				const minutes = date.getMinutes();
+				const timePoint = hour + (Math.floor(minutes / 15) * 0.25); // 15-minute interval
+				return {
+					x: timePoint,
+					y: parseFloat(data.value),
+				};
 			});
 
-			setChartData(completeChartData);
+			const completeChartData = fullQuarterHourRange.map(timePoint => {
+				const pointForTimePoint = chartPoints.find(point => point.x === timePoint);
+				return pointForTimePoint || { x: timePoint, y: null };
+			});
+
+			setChartData(completeChartData.slice(0, 49).map(
+				(point) => { return { x: point.x, y: point.y } })
+				.concat(completeChartData.slice(49).map(
+					(point) => { return { x: point.x, yprim: point.y } })));
+
 		}
 	}, [selectedType, selectedOpshtina, sensorData]);
+
+	const xAxisTickFormatter = (value) => {
+		const hours = Math.floor(value);
+		const minutes = value % 1 === 0 ? '00' : value % 1 === 0.25 ? '15' : value % 1 === 0.5 ? '30' : '45';
+
+		return `${hours.toString().padStart(2, '0')}:${minutes}`;
+	};
 
 	if (!sensorData || sensorData.length === 0) {
 		return (
@@ -90,18 +107,37 @@ const LineChartComponent = ({ sensorData }) => {
 					<LineChart
 						width={1000}
 						height={600}
-						series={[
-							{
-								data: chartData.map(point => point.y),
-								label: `Sensor Type: ${selectedType}`,
+						sx={{
+							[`& .MuiLineElement-series-predicted`]: {
+								strokeDasharray: '10 5',
+								strokeWidth: 4,
 							},
-						]}
-						xAxis={[
-							{
-								data: chartData.map(point => point.x),
-								label: "Hour of the Day",
-							},
-						]}
+						}}
+						series={
+							[
+								{
+									id: 'realValue',
+									dataKey: 'y',
+									connectNulls: true,
+									area: true,
+									label: `pm10:`,
+								},
+								{
+									id: 'predicted',
+									dataKey: 'yprim',
+									connectNulls: true,
+									label: 'pm10 (predicted):'
+								}
+							]}
+						xAxis={
+							[
+								{
+									data: fullQuarterHourRange,
+									label: "Time of Day",
+									valueFormatter: xAxisTickFormatter,
+								},
+							]}
+						dataset={chartData}
 					/>
 				</Box>
 			) : (
