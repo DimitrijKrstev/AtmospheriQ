@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 
 load_dotenv()
-app = FastAPI()
+router = APIRouter()
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -59,7 +59,7 @@ class Sensor:
         }
 
 
-@app.get("/sensor_relations/{num_relations}")
+@router.get("/sensor_relations/{num_relations}")
 async def say_hello(num_relations: int):
     pulse_username = os.getenv("PULSE_USERNAME")
     pulse_password = os.getenv("PULSE_PASSWORD")

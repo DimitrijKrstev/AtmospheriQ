@@ -2,4 +2,6 @@ requests
 numpy
 pandas
 fastapi
-dotenv
+python-dotenv
+joblib
+kafka-python==2.0.2
