@@ -19,11 +19,21 @@ def init_db():
         """)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS Data (
-                sensor TEXT NOT NULL,
+                measurementId NUMBER NOT NULL,
+                sensorId TEXT NOT NULL,
                 timestamp DATETIME NOT NULL,
                 pm10 REAL NOT NULL,
                 is_predicted BOOLEAN NOT NULL,
-                PRIMARY KEY (sensor, timestamp)
+                PRIMARY KEY (measurementId, sensorId, timestamp)
             )
         """)
+        cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS Predicted_Data (
+                        measurementId NUMBER NOT NULL,
+                        sensorId TEXT NOT NULL,
+                        timestamp DATETIME NOT NULL,
+                        pm10 REAL NOT NULL,
+                        PRIMARY KEY (measurementId, sensorId, timestamp)
+                    )
+                """)
         conn.commit()
